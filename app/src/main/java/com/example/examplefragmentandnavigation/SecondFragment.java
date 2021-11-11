@@ -1,9 +1,14 @@
 package com.example.examplefragmentandnavigation;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
@@ -19,6 +24,8 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -29,6 +36,8 @@ import android.widget.Toast;
 import com.example.examplefragmentandnavigation.databinding.FragmentSecondBinding;
 import com.google.android.material.snackbar.Snackbar;
 
+import java.io.ByteArrayOutputStream;
+
 public class SecondFragment extends Fragment {
 
     private FragmentSecondBinding binding;
@@ -37,6 +46,8 @@ public class SecondFragment extends Fragment {
     private ActivityResultLauncher<Intent> activityResultLauncher; //activityResultLauncher.launch(intent)
 
     private Bitmap selectedImageBitmap;
+
+    private SQLiteDatabase database;
 
     public SecondFragment() {
         // Required empty public constructor
@@ -47,6 +58,9 @@ public class SecondFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         registerLauncher();
+
+        //database create
+        database = requireContext().openOrCreateDatabase("ArtsBook", MODE_PRIVATE, null);
     }
 
     private void registerLauncher() {
@@ -111,7 +125,7 @@ public class SecondFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
+        //imageViewSelect onClick
         binding.imageViewSelect.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -142,6 +156,41 @@ public class SecondFragment extends Fragment {
                     activityResultLauncher.launch(intentToGallery);
                 }
 
+            }
+        });
+
+        //save button onClick
+        binding.buttonSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String art_name = binding.editTextName.getText().toString();
+                String art_year = binding.editTextYear.getText().toString();
+
+                //Resimi db'ye kaydetmeden önce byteArray'e çevirelim
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+                selectedImageBitmap.compress(Bitmap.CompressFormat.PNG, 80, outputStream);
+                byte[] byteArrayImage = outputStream.toByteArray();
+
+                //Db kayıt
+                try {
+                    database.execSQL("CREATE TABLE IF NOT EXISTS arts (id INTEGER PRIMARY KEY, name VARCHAR, year VARCHAR, image BLOB)");
+
+                    String sqlString = "INSERT INTO arts (name, year, image) VALUES(?, ?, ?)";
+                    SQLiteStatement sqLiteStatement = database.compileStatement(sqlString);
+
+                    //1.soru işaretine name, 2.year, 3.image
+                    sqLiteStatement.bindString(1, art_name);
+                    sqLiteStatement.bindString(2, art_year);
+                    sqLiteStatement.bindBlob(3, byteArrayImage);
+                    sqLiteStatement.execute();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+                //kaydettikten sonra listeleme ekranına git
+                NavDirections action = SecondFragmentDirections.actionSecondFragmentToFirstFragment();
+                Navigation.findNavController(requireActivity(), R.id.fragmentNavHost).navigate(action);
             }
         });
     }

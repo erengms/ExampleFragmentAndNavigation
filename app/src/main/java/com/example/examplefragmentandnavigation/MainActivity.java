@@ -2,6 +2,8 @@ package com.example.examplefragmentandnavigation;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.navigation.NavDirections;
+import androidx.navigation.Navigation;
 
 import android.os.Bundle;
 import android.view.Menu;
@@ -34,7 +36,11 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
-        //Todo navigation graph
+        if (item.getItemId() == R.id.add_art){
+            NavDirections action = FirstFragmentDirections.actionFirstFragmentToSecondFragment();
+            Navigation.findNavController(this, R.id.fragmentNavHost).navigate(action);
+        }
+
         return super.onOptionsItemSelected(item);
     }
 }

@@ -1,5 +1,7 @@
 package com.example.examplefragmentandnavigation;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -7,7 +9,10 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +27,7 @@ public class FirstFragment extends Fragment {
 
     private FragmentFirstBinding binding;
     private ArrayList<Art> artArrayList;
+    private ArtAdapter artAdapter;
 
     public FirstFragment() {
         // Required empty public constructor
@@ -33,10 +39,8 @@ public class FirstFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
         artArrayList = new ArrayList<>();
+        artAdapter = new ArtAdapter(artArrayList);
 
-        //todo reyclerview set adapter
-
-        getData();
     }
 
     @Override
@@ -48,10 +52,20 @@ public class FirstFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        binding.recyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        binding.recyclerView.setAdapter(artAdapter);
+
+        getData();
+    }
+
     private void getData() {
 
         try {
-            SQLiteDatabase database = requireContext().openOrCreateDatabase("Arts", Context.MODE_PRIVATE, null);
+            SQLiteDatabase database = requireContext().openOrCreateDatabase("ArtsBook", MODE_PRIVATE, null);
             Cursor cursor = database.rawQuery("SELECT * FROM arts", null);
 
             int idIx = cursor.getColumnIndex("id");
@@ -70,9 +84,8 @@ public class FirstFragment extends Fragment {
                 Art art = new Art(id, name, year, imageBitmap);
                 artArrayList.add(art);
             }
-            //todo recycler adapter notifyDatasetChanged
+            artAdapter.notifyDataSetChanged();
             cursor.close();
-
 
         } catch (Exception e) {
             e.printStackTrace();

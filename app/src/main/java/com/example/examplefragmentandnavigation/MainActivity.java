@@ -37,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
 
         if (item.getItemId() == R.id.add_art){
-            NavDirections action = FirstFragmentDirections.actionFirstFragmentToSecondFragment();
+            FirstFragmentDirections.ActionFirstFragmentToSecondFragment action = FirstFragmentDirections.actionFirstFragmentToSecondFragment("new");
             Navigation.findNavController(this, R.id.fragmentNavHost).navigate(action);
         }
 

@@ -7,9 +7,11 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.ImageDecoder;
 import android.net.Uri;
 import android.os.Build;
@@ -48,6 +50,8 @@ public class SecondFragment extends Fragment {
     private Bitmap selectedImageBitmap;
 
     private SQLiteDatabase database;
+    String info = "";
+
 
     public SecondFragment() {
         // Required empty public constructor
@@ -59,8 +63,7 @@ public class SecondFragment extends Fragment {
 
         registerLauncher();
 
-        //database create
-        database = requireContext().openOrCreateDatabase("ArtsBook", MODE_PRIVATE, null);
+
     }
 
     private void registerLauncher() {
@@ -125,6 +128,10 @@ public class SecondFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        //database create
+        database = requireContext().openOrCreateDatabase("ArtsBook", MODE_PRIVATE, null);
+
         //imageViewSelect onClick
         binding.imageViewSelect.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,5 +200,43 @@ public class SecondFragment extends Fragment {
                 Navigation.findNavController(requireActivity(), R.id.fragmentNavHost).navigate(action);
             }
         });
+
+        if (getArguments() != null){
+            info = SecondFragmentArgs.fromBundle(getArguments()).getInfo();
+        } else {
+            info = "new";
+        }
+
+
+        if (info.equals("new")){
+            binding.editTextName.setText("");
+            binding.editTextYear.setText("");
+            binding.buttonSave.setVisibility(View.VISIBLE);
+            binding.imageViewSelect.setImageResource(R.drawable.ic_round_image_search_24);
+        } else {
+            int artId = SecondFragmentArgs.fromBundle(getArguments()).getArtId();
+            binding.buttonSave.setVisibility(View.INVISIBLE);
+
+            try {
+                Cursor cursor = database.rawQuery("SELECT * FROM arts WHERE id = ?", new String[] {String.valueOf(artId)} );
+                int nameIx = cursor.getColumnIndex("name");
+                int yearIx = cursor.getColumnIndex("year");
+                int imageIx = cursor.getColumnIndex("image");
+
+                while (cursor.moveToNext()){
+                    binding.editTextName.setText(cursor.getString(nameIx));
+                    binding.editTextYear.setText(cursor.getString(yearIx));
+
+                    byte[] bytes = cursor.getBlob(imageIx);
+                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                    binding.imageViewSelect.setImageBitmap(bitmap);
+                }
+                cursor.close();
+
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+
     }
 }

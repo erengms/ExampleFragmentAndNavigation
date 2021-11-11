@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
+import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.examplefragmentandnavigation.databinding.RecyclerRowBinding;
@@ -31,6 +32,17 @@ public class ArtAdapter extends RecyclerView.Adapter<ArtAdapter.ArtHolder> {
       holder.binding.recyclerViewTextName.setText(artArrayList.get(position).name);
       holder.binding.recyclerViewTextYear.setText(artArrayList.get(position).year);
       holder.binding.recyclerviewImage.setImageBitmap(artArrayList.get(position).image);
+
+      holder.itemView.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View view) {
+            FirstFragmentDirections.ActionFirstFragmentToSecondFragment action = FirstFragmentDirections.actionFirstFragmentToSecondFragment("old");
+            action.setArtId(artArrayList.get(holder.getAdapterPosition()).id);
+            action.setInfo("old");
+
+            Navigation.findNavController(view).navigate(action);
+         }
+      });
 
    }
 

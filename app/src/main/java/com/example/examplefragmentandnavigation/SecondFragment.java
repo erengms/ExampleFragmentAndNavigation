@@ -74,6 +74,8 @@ public class SecondFragment extends Fragment {
             public void onActivityResult(Boolean result) {
                 if (result) {
                     // izin verildiyse galeriye git
+                    Intent intentToGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                    activityResultLauncher.launch(intentToGallery);
 
                 } else {
                     // daha önce izin istenmiş verilmemiş ve tekrar sorma denmiş

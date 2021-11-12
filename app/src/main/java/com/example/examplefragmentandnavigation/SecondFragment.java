@@ -173,9 +173,11 @@ public class SecondFragment extends Fragment {
                 String art_name = binding.editTextName.getText().toString();
                 String art_year = binding.editTextYear.getText().toString();
 
+                Bitmap smallImage = makeSmallerImage(selectedImageBitmap, 300);
+
                 //Resimi db'ye kaydetmeden önce byteArray'e çevirelim
                 ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                selectedImageBitmap.compress(Bitmap.CompressFormat.PNG, 80, outputStream);
+                smallImage.compress(Bitmap.CompressFormat.PNG, 80, outputStream);
                 byte[] byteArrayImage = outputStream.toByteArray();
 
                 //Db kayıt
@@ -238,5 +240,23 @@ public class SecondFragment extends Fragment {
             }
         }
 
+    }
+
+    private Bitmap makeSmallerImage(Bitmap selectedImageBitmap, int maxSize) {
+        int width = selectedImageBitmap.getWidth();
+        int height = selectedImageBitmap.getHeight();
+        float bitmapRatio = (float) width / (float) height;
+
+        if (bitmapRatio > 1) {
+            //landscape image
+            width = maxSize;
+            height = (int) (width / bitmapRatio);
+        } else {
+            // portrait image
+            height = maxSize;
+            width = (int) (height * bitmapRatio);
+        }
+
+        return Bitmap.createScaledBitmap(selectedImageBitmap, width, height, true);
     }
 }
